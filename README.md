@@ -1,5 +1,5 @@
 Sport Trackers Connector
-=
+=====================
 
 #Description
 Library/API to connect to sport trackers (eg. Garmin Connect, Endomondo, Runtastic).
@@ -16,6 +16,10 @@ Not yet available!
             <version>[LATEST_RELEASE]</version>
         </dependency>
 ```
+
+#Connectors
+- Garmin Connect - in progress
+- Endomondo - planned
 
 #Usage
 
