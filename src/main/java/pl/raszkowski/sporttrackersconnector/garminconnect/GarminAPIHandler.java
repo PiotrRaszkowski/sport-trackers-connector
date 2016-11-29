@@ -88,7 +88,7 @@ public class GarminAPIHandler extends APIHandler {
 		parameters.put(START_PARAMETER, ""+activitiesSearchFields.getStart());
 		parameters.put(LIMIT_PARAMETER, ""+activitiesSearchFields.getLimit());
 		if (activitiesSearchFields.getSortOrder() != null) {
-			parameters.put(SORT_ORDER_PARAMETER, activitiesSearchFields.getSortOrder());
+			parameters.put(SORT_ORDER_PARAMETER, activitiesSearchFields.getSortOrder().getValue());
 		}
 		if (activitiesSearchFields.getSortField() != null) {
 			parameters.put(SORT_FIELD_PARAMETER, activitiesSearchFields.getSortField());

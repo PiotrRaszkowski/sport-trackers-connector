@@ -64,7 +64,7 @@ public class GarminAPIHandlerIT {
 		activitiesSearchFields.setStart(0);
 		activitiesSearchFields.setLimit(5);
 		activitiesSearchFields.setSortField("beginTimestamp");
-		activitiesSearchFields.setSortOrder("desc");
+		activitiesSearchFields.setSortOrder(ActivitiesSearchFields.SortOrder.DESC);
 
 		JsonArray activities = garminAPIHandler.getActivities(activitiesSearchFields);
 

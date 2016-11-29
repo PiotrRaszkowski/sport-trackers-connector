@@ -23,7 +23,23 @@ public class ActivitiesSearchFields {
 
 	private String sortField;
 
-	private String sortOrder;
+	private SortOrder sortOrder;
+
+	public enum SortOrder {
+		DESC("desc"),
+		ASC("asc"),
+		;
+
+		private final String value;
+
+		private SortOrder(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
 
 	public int getStart() {
 		return start;
@@ -49,11 +65,11 @@ public class ActivitiesSearchFields {
 		this.sortField = sortField;
 	}
 
-	public String getSortOrder() {
+	public SortOrder getSortOrder() {
 		return sortOrder;
 	}
 
-	public void setSortOrder(String sortOrder) {
+	public void setSortOrder(SortOrder sortOrder) {
 		this.sortOrder = sortOrder;
 	}
 }
