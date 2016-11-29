@@ -8,7 +8,6 @@ Library/API to connect to sport trackers (eg. Garmin Connect, Endomondo, Runtast
 No free/public and well-documented API for Garmin Connect and Endomondo.
 
 #Installation
-Not yet available!
 ```xml
         <dependency>
             <groupId>pl.raszkowski</groupId>

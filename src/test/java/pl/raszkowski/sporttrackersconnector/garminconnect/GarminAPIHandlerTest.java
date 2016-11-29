@@ -15,7 +15,6 @@
  */
 package pl.raszkowski.sporttrackersconnector.garminconnect;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
@@ -24,13 +23,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import pl.raszkowski.sporttrackersconnector.JsonTestHelper;
 import pl.raszkowski.sporttrackersconnector.configuration.ConnectorsConfiguration;
+import pl.raszkowski.sporttrackersconnector.json.ResponseJsonParser;
 import pl.raszkowski.sporttrackersconnector.rest.RESTExecutor;
 
 import com.google.gson.JsonArray;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -40,10 +43,15 @@ public class GarminAPIHandlerTest {
 
 	private static final String ACTIVITIES_RESOURCE = "activities";
 
+	private static final String RESPONSE = "{ RESPONSE }";
+
 	private RESTExecutor restExecutor;
 
 	@Mock
 	private ConnectorsConfiguration connectorsConfiguration;
+
+	@Mock
+	private ResponseJsonParser responseJsonParser;
 
 	@InjectMocks
 	private GarminAPIHandler garminAPIHandler;
@@ -56,30 +64,14 @@ public class GarminAPIHandlerTest {
 
 		MockitoAnnotations.initMocks(this);
 
+		doReturn(RESPONSE).when(restExecutor).executeGET(eq(ACTIVITY_SEARCH_SERVICE), eq(ACTIVITIES_RESOURCE), any(Map.class));
+
 		doReturn(ACTIVITY_SEARCH_SERVICE).when(connectorsConfiguration).getGarminConnectRESTActivitySearchService();
 	}
 
 	@Test
 	public void getActivitiesWhenEmptyJson() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("{}").when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
-
-		JsonArray json = garminAPIHandler.getActivities(0, 20);
-
-		assertNotNull(json);
-		assertEquals(0, json.size());
-	}
-
-	@Test
-	public void getActivitiesWhenEmptyResponse() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("").when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
+		doReturn(JsonTestHelper.readJsonObject("{}")).when(responseJsonParser).parseAsJsonObject(RESPONSE);
 
 		JsonArray json = garminAPIHandler.getActivities(0, 20);
 
@@ -89,11 +81,7 @@ public class GarminAPIHandlerTest {
 
 	@Test
 	public void getActivitiesWhenNoResultsElement() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("{ response : \"content\"}").when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
+		doReturn(JsonTestHelper.readJsonObject("{ response : \"content\"}")).when(responseJsonParser).parseAsJsonObject(RESPONSE);
 
 		JsonArray json = garminAPIHandler.getActivities(0, 20);
 
@@ -103,11 +91,7 @@ public class GarminAPIHandlerTest {
 
 	@Test
 	public void getActivitiesWhenNoActivitiesElement() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("{ results : {}}").when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
+		doReturn(JsonTestHelper.readJsonObject("{ results : {}}")).when(responseJsonParser).parseAsJsonObject(RESPONSE);
 
 		JsonArray json = garminAPIHandler.getActivities(0, 20);
 
@@ -117,11 +101,7 @@ public class GarminAPIHandlerTest {
 
 	@Test
 	public void getActivitiesWhenEmptyActivities() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("{ results : { activities : [] } }" ).when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
+		doReturn(JsonTestHelper.readJsonObject("{ results : { activities : [] } }")).when(responseJsonParser).parseAsJsonObject(RESPONSE);
 
 		JsonArray json = garminAPIHandler.getActivities(0, 20);
 
@@ -131,11 +111,7 @@ public class GarminAPIHandlerTest {
 
 	@Test
 	public void getActivitiesWhenNotEmptyActivities() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("start", ""+0);
-		parameters.put("limit", ""+20);
-
-		doReturn("{ results : { activities : [{}] } }" ).when(restExecutor).executeGET(ACTIVITY_SEARCH_SERVICE, ACTIVITIES_RESOURCE, parameters);
+		doReturn(JsonTestHelper.readJsonObject("{ results : { activities : [{}] } }")).when(responseJsonParser).parseAsJsonObject(RESPONSE);
 
 		JsonArray json = garminAPIHandler.getActivities(0, 20);
 

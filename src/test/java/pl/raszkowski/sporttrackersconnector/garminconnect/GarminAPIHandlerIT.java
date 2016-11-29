@@ -18,40 +18,30 @@ package pl.raszkowski.sporttrackersconnector.garminconnect;
 import org.junit.Before;
 import org.junit.Test;
 
-import pl.raszkowski.sporttrackersconnector.configuration.ConnectorsConfiguration;
-import pl.raszkowski.sporttrackersconnector.json.ResponseJsonParser;
-import pl.raszkowski.sporttrackersconnector.rest.RESTExecutor;
 import pl.raszkowski.sporttrackersconnector.test.TestCredentials;
 import pl.raszkowski.sporttrackersconnector.test.TestPropertiesLoader;
 
-import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 import static org.junit.Assert.assertNotNull;
 
-public class GarminConnectConnectorIT {
-
-	private static final String SEARCHABLE_FIELDS_RESOURCE = "searchable_fields";
-
+public class GarminAPIHandlerIT {
 	private TestPropertiesLoader testPropertiesLoader = TestPropertiesLoader.getInstance();
 
 	private TestCredentials testCredentials;
 
-	private ConnectorsConfiguration connectorsConfiguration = ConnectorsConfiguration.getInstance();
-
-	private ResponseJsonParser responseJsonParser = new ResponseJsonParser();
-
 	private GarminConnectConnector garminConnectConnector = new GarminConnectConnector();
+
+	private GarminAPIHandler garminAPIHandler;
 
 	@Before
 	public void setUp() {
 		testCredentials = testPropertiesLoader.loadTestCredentials();
-	}
 
-	@Test
-	public void authorize() {
 		GarminConnectCredentials credentials = buildCredentials();
-
 		garminConnectConnector.authorize(credentials);
+
+		garminAPIHandler = garminConnectConnector.getAPIHandler();
 	}
 
 	private GarminConnectCredentials buildCredentials() {
@@ -62,14 +52,23 @@ public class GarminConnectConnectorIT {
 	}
 
 	@Test
-	public void executeGET() {
-		GarminConnectCredentials credentials = buildCredentials();
-		garminConnectConnector.authorize(credentials);
+	public void getActivitiesGivenStartAndLimit() {
+		JsonArray activities = garminAPIHandler.getActivities(0, 5);
 
-		RESTExecutor restExecutor = garminConnectConnector.getRESTExecutor();
-		String result = restExecutor.executeGET(connectorsConfiguration.getGarminConnectRESTActivitySearchService(), SEARCHABLE_FIELDS_RESOURCE);
-
-		JsonObject jsonObject = responseJsonParser.parseAsJsonObject(result);
-		assertNotNull(jsonObject);
+		assertNotNull(activities);
 	}
+
+	@Test
+	public void getActivitiesGivenSortFieldAndSortOrder() {
+		ActivitiesSearchFields activitiesSearchFields = new ActivitiesSearchFields();
+		activitiesSearchFields.setStart(0);
+		activitiesSearchFields.setLimit(5);
+		activitiesSearchFields.setSortField("beginTimestamp");
+		activitiesSearchFields.setSortOrder("desc");
+
+		JsonArray activities = garminAPIHandler.getActivities(activitiesSearchFields);
+
+		assertNotNull(activities);
+	}
+
 }

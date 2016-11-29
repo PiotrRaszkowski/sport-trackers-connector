@@ -31,6 +31,8 @@ public class GarminAPIHandler extends APIHandler {
 
 	private static final String START_PARAMETER = "start";
 	private static final String LIMIT_PARAMETER = "limit";
+	private static final String SORT_ORDER_PARAMETER = "sortOrder";
+	private static final String SORT_FIELD_PARAMETER = "sortField";
 
 	private static final String RESULTS_JSON_KEY = "results";
 	private static final String ACTIVITIES_JSON_KEY = "activities";
@@ -41,18 +43,56 @@ public class GarminAPIHandler extends APIHandler {
 		super(restExecutor);
 	}
 
+	/**
+	 * <pre>
+	 *     Finds activities with start and limit offsets.
+	 * </pre>
+	 *
+	 * @param start starting activity
+	 * @param limit limit of activities to retrieve
+	 * @return JsonArray with activities
+	 */
 	public JsonArray getActivities(int start, int limit) {
-		Map<String, String> parameters = prepareGetActivitiesParameters(start, limit);
+		ActivitiesSearchFields activitiesSearchFields = new ActivitiesSearchFields();
+		activitiesSearchFields.setStart(start);
+		activitiesSearchFields.setLimit(limit);
+		return getActivities(activitiesSearchFields);
+	}
+
+	/**
+	 * <pre>
+	 * Finds activities using given fields from {@link ActivitiesSearchFields}.
+	 *
+	 * Possible fields configurations:
+	 * @see <a href="https://connect.garmin.com/proxy/activity-search-service-1.0/axm/searchable_fields">searchable_fields</a>
+	 * @see <a href="https://connect.garmin.com/proxy/activity-service-1.0/axm/activity_types">activity_types</a>
+	 * @see <a href="https://connect.garmin.com/proxy/activity-service-1.0/axm/event_types">event_types</a>
+	 * @see <a href="https://connect.garmin.com/proxy/activity-service-1.0/axm/units">units</a>
+	 * @see <a href="https://connect.garmin.com/proxy/activity-search-service-1.0/axm/operators">operators</a>
+	 * @see <a href="https://connect.garmin.com/proxy/activity-search-service-1.0/axm/query_options">query_options</a>
+	 * </pre>
+
+	 * @param activitiesSearchFields search details
+	 * @return JsonArray with activities
+	 */
+	public JsonArray getActivities(ActivitiesSearchFields activitiesSearchFields) {
+		Map<String, String> parameters = prepareGetActivitiesParameters(activitiesSearchFields);
 
 		String response = restExecutor.executeGET(connectorsConfiguration.getGarminConnectRESTActivitySearchService(), ACTIVITIES_RESOURCE, parameters);
 
 		return parseGetActivitiesResponse(response);
 	}
 
-	private Map<String, String> prepareGetActivitiesParameters(int start, int limit) {
+	private Map<String, String> prepareGetActivitiesParameters(ActivitiesSearchFields activitiesSearchFields) {
 		Map<String, String> parameters = new HashMap<>();
-		parameters.put(START_PARAMETER, ""+start);
-		parameters.put(LIMIT_PARAMETER, ""+limit);
+		parameters.put(START_PARAMETER, ""+activitiesSearchFields.getStart());
+		parameters.put(LIMIT_PARAMETER, ""+activitiesSearchFields.getLimit());
+		if (activitiesSearchFields.getSortOrder() != null) {
+			parameters.put(SORT_ORDER_PARAMETER, activitiesSearchFields.getSortOrder());
+		}
+		if (activitiesSearchFields.getSortField() != null) {
+			parameters.put(SORT_FIELD_PARAMETER, activitiesSearchFields.getSortField());
+		}
 		return parameters;
 	}
 
