@@ -15,11 +15,9 @@
  */
 package pl.raszkowski.sporttrackersconnector.garminconnect;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import pl.raszkowski.sporttrackersconnector.configuration.ConnectorsConfiguration;
 import pl.raszkowski.sporttrackersconnector.rest.APIHandler;
+import pl.raszkowski.sporttrackersconnector.rest.GetParameters;
 import pl.raszkowski.sporttrackersconnector.rest.RESTExecutor;
 
 import com.google.gson.JsonArray;
@@ -70,30 +68,37 @@ public class GarminAPIHandler extends APIHandler {
 	 * @see <a href="https://connect.garmin.com/proxy/activity-service-1.0/axm/units">units</a>
 	 * @see <a href="https://connect.garmin.com/proxy/activity-search-service-1.0/axm/operators">operators</a>
 	 * @see <a href="https://connect.garmin.com/proxy/activity-search-service-1.0/axm/query_options">query_options</a>
+	 * @see <a href="http://books.xmlschemata.org/relaxng/ch19-77049.html">xsd:dateTime</a>
+	 * @see <a href="http://books.xmlschemata.org/relaxng/ch19-77041.html">xsd:date</a>
 	 * </pre>
 
 	 * @param activitiesSearchFields search details
 	 * @return JsonArray with activities
 	 */
 	public JsonArray getActivities(ActivitiesSearchFields activitiesSearchFields) {
-		Map<String, String> parameters = prepareGetActivitiesParameters(activitiesSearchFields);
+		GetParameters getParameters = prepareGetActivitiesParameters(activitiesSearchFields);
 
-		String response = restExecutor.executeGET(connectorsConfiguration.getGarminConnectRESTActivitySearchService(), ACTIVITIES_RESOURCE, parameters);
+		String response = restExecutor.executeGET(connectorsConfiguration.getGarminConnectRESTActivitySearchService(), ACTIVITIES_RESOURCE, getParameters);
 
 		return parseGetActivitiesResponse(response);
 	}
 
-	private Map<String, String> prepareGetActivitiesParameters(ActivitiesSearchFields activitiesSearchFields) {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put(START_PARAMETER, ""+activitiesSearchFields.getStart());
-		parameters.put(LIMIT_PARAMETER, ""+activitiesSearchFields.getLimit());
+	private GetParameters prepareGetActivitiesParameters(ActivitiesSearchFields activitiesSearchFields) {
+		GetParameters getParameters = new GetParameters();
+		getParameters.addParameter(START_PARAMETER, ""+activitiesSearchFields.getStart());
+		getParameters.addParameter(LIMIT_PARAMETER, ""+activitiesSearchFields.getLimit());
 		if (activitiesSearchFields.getSortOrder() != null) {
-			parameters.put(SORT_ORDER_PARAMETER, activitiesSearchFields.getSortOrder().getValue());
+			getParameters.addParameter(SORT_ORDER_PARAMETER, activitiesSearchFields.getSortOrder().getValue());
 		}
 		if (activitiesSearchFields.getSortField() != null) {
-			parameters.put(SORT_FIELD_PARAMETER, activitiesSearchFields.getSortField());
+			getParameters.addParameter(SORT_FIELD_PARAMETER, activitiesSearchFields.getSortField());
 		}
-		return parameters;
+
+		for (ActivitiesSearchFields.Condition condition : activitiesSearchFields.getConditions()) {
+			getParameters.addCustomParameter(condition.getField(), condition.getOperator().getValue(), condition.getValue());
+		}
+
+		return getParameters;
 	}
 
 	private JsonArray parseGetActivitiesResponse(String response) {

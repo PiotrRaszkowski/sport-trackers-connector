@@ -17,16 +17,13 @@ package pl.raszkowski.sporttrackersconnector.rest;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +33,14 @@ import pl.raszkowski.sporttrackersconnector.helper.HttpResponseVerifier;
 
 public abstract class RESTExecutor {
 
-	private static final String CANNOT_BUILD_URI_ERROR_MESSAGE = "Cannot build URI for service = %s, resource = %s.";
 	private static final String UNABLE_TO_EXECUTE_REQUEST_ERROR_MESSAGE = "Unable to execute request!";
 	private static final String WRONG_RESPONSE_STATUS_CODE_ERROR_MESSAGE = "Wrong response status code = %s, expected = %s, for URI = %s.";
 
 	private static final Logger LOG = LoggerFactory.getLogger(RESTExecutor.class);
 
 	private HttpClient httpClient;
+
+	private RESTUriBuilder restUriBuilder = new RESTUriBuilder();
 
 	public RESTExecutor(HttpClient httpClient) {
 		this.httpClient = httpClient;
@@ -53,10 +51,19 @@ public abstract class RESTExecutor {
 	}
 
 	public String executeGET(String service, String resource, Map<String, String> parameters) {
+		GetParameters getParameters = new GetParameters();
+		getParameters.setParameters(parameters);
+
+		return executeGET(service, resource, getParameters);
+	}
+
+	public String executeGET(String service, String resource, GetParameters getParameters) {
 		try {
-			URI uri = buildURI(service, resource, parameters);
+			URI uri = buildURI(service, resource, getParameters);
 
 			HttpGet httpGet = new HttpGet(uri);
+
+			LOG.debug("Executing GET request = {}.", httpGet.getURI());
 
 			HttpResponse response = httpClient.execute(httpGet);
 
@@ -72,24 +79,11 @@ public abstract class RESTExecutor {
 		}
 	}
 
-	private URI buildURI(String service, String resource, Map<String, String> parameters) {
+	private URI buildURI(String service, String resource, GetParameters getParameters) {
 		String resourceURI = translateResourceToURI(service, resource);
 
-		try {
-			URIBuilder uriBuilder = new URIBuilder(resourceURI);
-			parameters.entrySet().forEach(entry -> uriBuilder.setParameter(entry.getKey(), entry.getValue()));
-			return uriBuilder.build();
-		} catch (URISyntaxException e) {
-			LOG.error("Cannot build URI for service = {}, resource = {}.", service, resource);
-			throw new ConnectorException(String.format(CANNOT_BUILD_URI_ERROR_MESSAGE, service, resource), e);
-		}
+		return restUriBuilder.build(resourceURI, getParameters);
 	}
-
-
 
 	public abstract String translateResourceToURI(String service, String resource);
-
-	public String executePOST() {
-		throw new NotImplementedException("Not yet implemented!");
-	}
 }

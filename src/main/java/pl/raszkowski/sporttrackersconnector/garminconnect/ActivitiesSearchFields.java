@@ -15,6 +15,13 @@
  */
 package pl.raszkowski.sporttrackersconnector.garminconnect;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ActivitiesSearchFields {
 
 	private int start;
@@ -33,6 +40,78 @@ public class ActivitiesSearchFields {
 		private final String value;
 
 		private SortOrder(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
+
+	private List<Condition> conditions = new ArrayList<>();
+
+	public static class Condition {
+		private String field;
+
+		private Operator operator;
+
+		private String value;
+
+		public Condition(String field, Operator operator, String value) {
+			this.field = field;
+			this.operator = operator;
+			this.value = value;
+		}
+
+		public Condition(String field, Operator operator, LocalDateTime value) {
+			this(field, operator, OffsetDateTime.of(value, ZoneOffset.UTC));
+		}
+
+		public Condition(String field, Operator operator, OffsetDateTime value) {
+			this.field = field;
+			this.operator = operator;
+			this.value = value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+		}
+
+		public String getField() {
+			return field;
+		}
+
+		public void setField(String field) {
+			this.field = field;
+		}
+
+		public Operator getOperator() {
+			return operator;
+		}
+
+		public void setOperator(Operator operator) {
+			this.operator = operator;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+	}
+
+	public enum Operator {
+		EQUAL("="),
+		GREATER_THAN(">"),
+		GREATER_THAN_OR_EQUAL(">="),
+		LESS_THAN("&lt;"),
+		LESS_THAN_OR_EQUAL("&lt;="),
+		NOT_EQUAL("!="),
+		CONTAINS("in"),
+		IS("is"),
+		;
+
+		private final String value;
+
+		private Operator(String value) {
 			this.value = value;
 		}
 
@@ -71,5 +150,23 @@ public class ActivitiesSearchFields {
 
 	public void setSortOrder(SortOrder sortOrder) {
 		this.sortOrder = sortOrder;
+	}
+
+	public List<Condition> getConditions() {
+		return conditions;
+	}
+
+	public void setConditions(List<Condition> conditions) {
+		this.conditions = conditions;
+	}
+
+	public void addCondition(Condition condition) {
+		this.conditions.add(condition);
+	}
+
+	public void addConditions(Condition ... conditions) {
+		for (Condition condition : conditions) {
+			this.conditions.add(condition);
+		}
 	}
 }

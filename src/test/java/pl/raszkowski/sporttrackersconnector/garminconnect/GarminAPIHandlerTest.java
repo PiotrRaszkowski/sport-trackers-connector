@@ -15,8 +15,6 @@
  */
 package pl.raszkowski.sporttrackersconnector.garminconnect;
 
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -26,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 import pl.raszkowski.sporttrackersconnector.JsonTestHelper;
 import pl.raszkowski.sporttrackersconnector.configuration.ConnectorsConfiguration;
 import pl.raszkowski.sporttrackersconnector.json.ResponseJsonParser;
+import pl.raszkowski.sporttrackersconnector.rest.GetParameters;
 import pl.raszkowski.sporttrackersconnector.rest.RESTExecutor;
 
 import com.google.gson.JsonArray;
@@ -64,7 +63,7 @@ public class GarminAPIHandlerTest {
 
 		MockitoAnnotations.initMocks(this);
 
-		doReturn(RESPONSE).when(restExecutor).executeGET(eq(ACTIVITY_SEARCH_SERVICE), eq(ACTIVITIES_RESOURCE), any(Map.class));
+		doReturn(RESPONSE).when(restExecutor).executeGET(eq(ACTIVITY_SEARCH_SERVICE), eq(ACTIVITIES_RESOURCE), any(GetParameters.class));
 
 		doReturn(ACTIVITY_SEARCH_SERVICE).when(connectorsConfiguration).getGarminConnectRESTActivitySearchService();
 	}

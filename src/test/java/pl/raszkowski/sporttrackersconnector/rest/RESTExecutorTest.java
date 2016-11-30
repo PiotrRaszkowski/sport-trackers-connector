@@ -45,7 +45,7 @@ public class RESTExecutorTest {
 
 	private static final String RESOURCE = "resource";
 	private static final String SERVICE = "service";
-	public static final String RESPONSE_CONTENT = "RESPONSE CONTENT";
+	private static final String RESPONSE_CONTENT = "RESPONSE CONTENT";
 
 	private HttpClient httpClient;
 
@@ -70,14 +70,6 @@ public class RESTExecutorTest {
 		};
 
 		MockitoAnnotations.initMocks(this);
-	}
-
-	@Test
-	public void executeGETWhenCannotBuildURI() {
-		expectedException.expect(ConnectorException.class);
-		expectedException.expectMessage("Cannot build URI for service = -----&^ulalala, resource = " + RESOURCE);
-
-		restExecutor.executeGET("-----&^ulalala", RESOURCE);
 	}
 
 	@Test

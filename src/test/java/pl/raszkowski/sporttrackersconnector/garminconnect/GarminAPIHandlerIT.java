@@ -15,6 +15,9 @@
  */
 package pl.raszkowski.sporttrackersconnector.garminconnect;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,8 +25,10 @@ import pl.raszkowski.sporttrackersconnector.test.TestCredentials;
 import pl.raszkowski.sporttrackersconnector.test.TestPropertiesLoader;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class GarminAPIHandlerIT {
 	private TestPropertiesLoader testPropertiesLoader = TestPropertiesLoader.getInstance();
@@ -69,6 +74,57 @@ public class GarminAPIHandlerIT {
 		JsonArray activities = garminAPIHandler.getActivities(activitiesSearchFields);
 
 		assertNotNull(activities);
+		assertTrue(activities.size() > 1);
+
+		JsonPrimitive beginTimestamp1 = activities.get(0)
+				.getAsJsonObject()
+				.getAsJsonObject("activity")
+				.getAsJsonObject("activitySummary")
+				.getAsJsonObject("BeginTimestamp")
+				.getAsJsonPrimitive("value");
+		LocalDateTime beginDateTime1 = LocalDateTime.parse(beginTimestamp1.getAsString(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+		JsonPrimitive beginTimestamp2 = activities.get(1)
+				.getAsJsonObject()
+				.getAsJsonObject("activity")
+				.getAsJsonObject("activitySummary")
+				.getAsJsonObject("BeginTimestamp")
+				.getAsJsonPrimitive("value");
+		LocalDateTime beginDateTime2 = LocalDateTime.parse(beginTimestamp2.getAsString(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+		assertTrue(beginDateTime1.isAfter(beginDateTime2));
+	}
+
+	@Test
+	public void getActivitiesGivenBeginTimestampCondition() {
+		LocalDateTime filterDateTime = LocalDateTime.of(2015, 1, 1, 12, 0, 0);
+
+		ActivitiesSearchFields activitiesSearchFields = new ActivitiesSearchFields();
+		activitiesSearchFields.setStart(0);
+		activitiesSearchFields.setLimit(5);
+		activitiesSearchFields.setSortField("beginTimestamp");
+		activitiesSearchFields.setSortOrder(ActivitiesSearchFields.SortOrder.ASC);
+		activitiesSearchFields.addCondition(
+				new ActivitiesSearchFields.Condition(
+						"beginTimestamp",
+						ActivitiesSearchFields.Operator.GREATER_THAN, filterDateTime
+				)
+		);
+
+		JsonArray activities = garminAPIHandler.getActivities(activitiesSearchFields);
+
+		assertNotNull(activities);
+		assertTrue(activities.size() > 0);
+
+		JsonPrimitive beginTimestamp1 = activities.get(0)
+				.getAsJsonObject()
+				.getAsJsonObject("activity")
+				.getAsJsonObject("activitySummary")
+				.getAsJsonObject("BeginTimestamp")
+				.getAsJsonPrimitive("value");
+		LocalDateTime beginDateTime1 = LocalDateTime.parse(beginTimestamp1.getAsString(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+		assertTrue(beginDateTime1.isAfter(filterDateTime));
 	}
 
 }
